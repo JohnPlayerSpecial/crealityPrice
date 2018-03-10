@@ -103,8 +103,8 @@ def askPrice(bot, update):
 	timeRemaining = getRemainingTimeOffer(urlTimeRemaining)
 	humanTime = getHumanRemainingTimeOffer(timeRemaining)
 	text = "User asked for price information.\nPrice is now {}$ = <b>{}€</b>\nMoney conversion: 1 USD = {} EUR\nTime Remaining is {}\n\nGo check {}".format( price, priceEUR, round(USDtoEURconversion, 3), humanTime, url ) 
-	bot.send_message(disable_web_page_preview = True, chat_id=31923577,  text=text, parse_mode="Html")
-
+	bot.send_message(disable_web_page_preview = True, chat_id=update.message.chat_id,  text=text, parse_mode="Html")
+	
 def callback_minute(bot, job):
 	global url
 	currentPriceUSD, currency = getPriceandCurrency(url)
