@@ -92,7 +92,7 @@ def getHumanRemainingTimeOffer( timeRemaining ):
 	return "{}h{}m{}s".format(hours,minutes,seconds)
 	
 def start(bot, update):
-	bot.send_message(chat_id=update.message.chat_id, text="You'll get fucking notifications on every price change of your favourite 3D printer.\nIf you are eager you can use /prezzo to view the price.")
+	bot.send_message(chat_id=update.message.chat_id, text="You'll get fucking notifications on every price change of your favourite 3D printer.\nIf you are eager you can use /prezzo to view the price.\nA query to check price changes is done every 5 minutes")
 
 def askPrice(bot, update):
 	global url
