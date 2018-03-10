@@ -18,6 +18,8 @@ updater = Updater(token=TOKEN)
 
 def init_DB():
 	global STRING_DB
+	global url
+	global urlPriceConversion
 	timestamp = time.time()
 	db = postgresql.open(STRING_DB)
 	ps = db.prepare("CREATE TABLE IF NOT EXISTS priceTable (id serial PRIMARY KEY, priceUSD varchar(10), priceEUR varchar(10), USDtoEURconversion varchar(10), timestamp varchar(20) );")
@@ -26,7 +28,7 @@ def init_DB():
 	priceUSD, currency = getPriceandCurrency(url)
 	USDtoEURconversion = getPriceConversion(urlPriceConversion)
 	priceEUR = round( price * USDtoEURconversion, 2)  
-	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, USDtoEURconversion, timestamp) VALUES ('{}')".format(priceUSD, priceEUR, USDtoEURconversion , timestamp) )
+	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, USDtoEURconversion, timestamp) VALUES ('{}','{}','{}','{}')".format(priceUSD, priceEUR, USDtoEURconversion , timestamp) )
 	ps()       
 	db.close()
 init_DB()
@@ -35,7 +37,7 @@ def insertNewPrice(priceUSD,priceEUR, USDtoEURconversion):
 	global STRING_DB
 	timestamp = time.time()
 	db = postgresql.open(STRING_DB)
-	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, pricetoEURconversion, timestamp) VALUES ('{}')".format(priceUSD, priceEUR, USDtoEURconversion,  timestamp) )
+	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, pricetoEURconversion, timestamp) VALUES ('{}','{}','{}','{}')".format(priceUSD, priceEUR, USDtoEURconversion,  timestamp) )
 	ps()
 	db.close()
 
