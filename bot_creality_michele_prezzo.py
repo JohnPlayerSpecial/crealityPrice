@@ -139,7 +139,11 @@ def callback_minute(bot, job):
 			emojiCode = emoji.emojize(':thumbs_up: (decreased)')
 		print(emojiCode)
 		text = "<b>Price change detected.</b>\n{}\n\nPrice is now {}$ = <b>{}€</b>\nPrice was {}$ = <b>{}€</b>\nMoney conversion: 1 USD = {} EUR\n\nCurrent Time Remaining is {}\nGo check {}".format( emojiCode, currentPriceUSD, currentPriceEUR, previousPriceUSD, previousPriceEUR, round(USDtoEURconversion, 3), humanTime, url ) 
-		bot.send_message(disable_web_page_preview = True, chat_id=31923577,  text=text, parse_mode="Html")
+		try:
+			bot.send_message(disable_web_page_preview = True, chat_id=31923577,  text=text, parse_mode="Html")
+			bot.send_message(disable_web_page_preview = True, chat_id=281082989,  text=text, parse_mode="Html")
+		except Exception as e:
+			print("error send msg ")
 		insertNewPrice(currentPriceUSD, currentPriceEUR, USDtoEURconversion)
 	connection.commit()
 	connection.close()
@@ -173,9 +177,10 @@ def init_DB():
 init_DB()
 		
 start_handler = CommandHandler('start', start)
-start_handler = CommandHandler('prezzo', askPrice)
+prezzo_handler = CommandHandler('prezzo', askPrice)
 dispatcher = updater.dispatcher
 dispatcher.add_handler(start_handler)
+dispatcher.add_handler(prezzo_handler)
 
 j = updater.job_queue
 job_minute = j.run_repeating(callback_minute, interval=300, first=0)
