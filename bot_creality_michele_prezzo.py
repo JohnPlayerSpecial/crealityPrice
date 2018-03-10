@@ -7,6 +7,7 @@ import os
 from bs4 import BeautifulSoup
 import postgresql
 import time
+import psycopg2
 
 STRING_DB = os.environ['DATABASE_URL'].replace("postgres","pq")
 url = "https://www.gearbest.com/3d-printers-3d-printer-kits/pp_779174.html"
@@ -17,13 +18,18 @@ updater = Updater(token=TOKEN)
 
 
 def init_DB():
-	global STRING_DB
-	global url
-	global urlPriceConversion
-	timestamp = int( time.time() )
-	db = postgresql.open(STRING_DB)
-	ps = db.prepare("CREATE TABLE IF NOT EXISTS priceTable (id serial PRIMARY KEY, priceUSD varchar(10), priceEUR varchar(10), USDtoEURconversion varchar(10), timestamp varchar(20) );")
-	ps() 
+	database = 'd6a0kq967uo1vt'
+	username = 'onxzbhtnfsswva'
+	password = 'e80f5c71bc1dbd76e12e24b581d6a39be40f048b811c36a1b96744b26c3e2675'
+	hostname = 'ec2-54-247-81-88.eu-west-1.compute.amazonaws.com'
+	connection = psycopg2.connect(
+    					database = database,
+    					user = username,
+   					password = password,
+    					host = hostname
+				)
+	cur = connection.cursor()
+	cur.execute("""CREATE TABLE IF NOT EXISTS priceTable (id serial PRIMARY KEY, priceUSD varchar(10), priceEUR varchar(10), USDtoEURconversion varchar(10), timestamp varchar(20) )") """)
 	# ensure an initial price record is present
 	priceUSD, currency = getPriceandCurrency(url)
 	USDtoEURconversion = getPriceConversion(urlPriceConversion)
@@ -31,9 +37,9 @@ def init_DB():
 	print("initDB inizio")
 	print(priceUSD, currency, USDtoEURconversion, priceEUR)
 	print("fine")
-	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, USDtoEURconversion, timestamp) VALUES ('{}','{}','{}','{}');".format(priceUSD, priceEUR, USDtoEURconversion , timestamp) )
-	ps()       
-	db.close()
+	cur.execute("INSERT INTO priceTable (priceUSD, priceEUR, USDtoEURconversion, timestamp) VALUES ('{}','{}','{}','{*')".format(priceUSD, priceEUR, USDtoEURconversion , timestamp)))
+	connection.close()
+	
 init_DB()
 	
 def insertNewPrice(priceUSD,priceEUR, USDtoEURconversion):
