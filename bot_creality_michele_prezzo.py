@@ -4,7 +4,7 @@ from telegram.ext import *
 import urllib.request
 import os
 from bs4 import BeautifulSoup
-#import postgresql
+import postgresql
 import time
 
 STRING_DB = os.environ['DATABASE_URL'].replace("postgres","pq")
