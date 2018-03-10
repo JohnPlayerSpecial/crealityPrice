@@ -20,7 +20,7 @@ def init_DB():
 	global STRING_DB
 	global url
 	global urlPriceConversion
-	timestamp = time.time()
+	timestamp = int( time.time() )
 	db = postgresql.open(STRING_DB)
 	ps = db.prepare("CREATE TABLE IF NOT EXISTS priceTable (id serial PRIMARY KEY, priceUSD varchar(10), priceEUR varchar(10), USDtoEURconversion varchar(10), timestamp varchar(20) );")
 	ps() 
@@ -38,7 +38,7 @@ init_DB()
 	
 def insertNewPrice(priceUSD,priceEUR, USDtoEURconversion):
 	global STRING_DB
-	timestamp = time.time()
+	timestamp = int( time.time() )
 	db = postgresql.open(STRING_DB)
 	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, pricetoEURconversion, timestamp) VALUES ('{}','{}','{}','{}');".format(priceUSD, priceEUR, USDtoEURconversion,  timestamp) )
 	ps()
