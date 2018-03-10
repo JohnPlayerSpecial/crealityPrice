@@ -178,6 +178,6 @@ dispatcher = updater.dispatcher
 dispatcher.add_handler(start_handler)
 
 j = updater.job_queue
-job_minute = j.run_repeating(callback_minute, interval=10, first=0)
+job_minute = j.run_repeating(callback_minute, interval=300, first=0)
 
 updater.start_polling()
