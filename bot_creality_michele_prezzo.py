@@ -8,48 +8,39 @@ from bs4 import BeautifulSoup
 import postgresql
 import time
 import psycopg2
+from urllib.parse import urlparse
+import emoji
 
-STRING_DB = os.environ['DATABASE_URL'].replace("postgres","pq")
+STRING_DB = os.environ['DATABASE_URL']
+
 url = "https://www.gearbest.com/3d-printers-3d-printer-kits/pp_779174.html"
 urlPriceConversion = "https://order.gearbest.com/data-cache/currency_huilv.js?v=20180124153657"
 urlTimeRemaining = "https://www.gearbest.com/3d-printers-3d-printer-kits/pp_779174.html?wid=21&act=get_promo_left"
 TOKEN = os.environ['TOKEN']
+
 updater = Updater(token=TOKEN)
 
 
-def init_DB():
-	database = 'd6a0kq967uo1vt'
-	username = 'onxzbhtnfsswva'
-	password = 'e80f5c71bc1dbd76e12e24b581d6a39be40f048b811c36a1b96744b26c3e2675'
-	hostname = 'ec2-54-247-81-88.eu-west-1.compute.amazonaws.com'
-	connection = psycopg2.connect(
-    					database = database,
-    					user = username,
-   					password = password,
-    					host = hostname
-				)
-	cur = connection.cursor()
-	cur.execute("""CREATE TABLE IF NOT EXISTS priceTable (id serial PRIMARY KEY, priceUSD varchar(10), priceEUR varchar(10), USDtoEURconversion varchar(10), timestamp varchar(20) )") """)
-	# ensure an initial price record is present
-	priceUSD, currency = getPriceandCurrency(url)
-	USDtoEURconversion = getPriceConversion(urlPriceConversion)
-	priceEUR = round( price * USDtoEURconversion, 2)  
-	print("initDB inizio")
-	print(priceUSD, currency, USDtoEURconversion, priceEUR)
-	print("fine")
-	cur.execute("INSERT INTO priceTable (priceUSD, priceEUR, USDtoEURconversion, timestamp) VALUES ('{}','{}','{}','{*')".format(priceUSD, priceEUR, USDtoEURconversion , timestamp)))
-	connection.close()
-	
-init_DB()
-	
 def insertNewPrice(priceUSD,priceEUR, USDtoEURconversion):
 	global STRING_DB
 	timestamp = int( time.time() )
-	db = postgresql.open(STRING_DB)
-	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, pricetoEURconversion, timestamp) VALUES ('{}','{}','{}','{}');".format(priceUSD, priceEUR, USDtoEURconversion,  timestamp) )
-	ps()
-	db.close()
-
+	result = urlparse(STRING_DB)
+	username = result.username
+	password = result.password
+	database = result.path[1:]
+	hostname = result.hostname
+	connection = psycopg2.connect(
+								database = database,
+								user = username,
+								password = password,
+								host = hostname
+								)
+	cur = connection.cursor()
+	cur.execute('INSERT INTO pricetable (priceUSD, priceEUR, USDtoEURconversion, timestamp ) VALUES (%s, %s, %s, %s)', (priceUSD, priceEUR, USDtoEURconversion, timestamp) )
+	connection.commit()
+	connection.close()
+	
+	
 def getPriceandCurrency( url ):
 	req = urllib.request.Request(
 		url, 
@@ -122,17 +113,64 @@ def callback_minute(bot, job):
 	timeRemaining = getRemainingTimeOffer(urlTimeRemaining)
 	humanTime = getHumanRemainingTimeOffer(timeRemaining)
 	#check if price changed
-	ps = db.prepare("SELECT * FROM priceTable ORDER BY ID DESC LIMIT 1;")
-	previousPriceUSD = float( [ item[1] for item in ps() ][0] )
-	previousPriceEUR = float( [ item[2] for item in ps() ][0] )
-	print(previousPriceUSD )
-	print(previousPriceEUR )
+	result = urlparse(STRING_DB)
+	username = result.username
+	password = result.password
+	database = result.path[1:]
+	hostname = result.hostname
+	connection = psycopg2.connect(
+								database = database,
+								user = username,
+								password = password,
+								host = hostname
+								)
+	cur = connection.cursor()
+	cur.execute("""SELECT * FROM pricetable ORDER BY ID DESC LIMIT 1""")
+	rows = cur.fetchall()
+	previousPriceUSD = float( rows[0][1] )
+	previousPriceEUR = float( rows[0][2] )
+	#print(previousPriceUSD )
+	#print(previousPriceEUR )
 	#if changed price send msg
-	if ( abs(currentPriceUSD - previousPriceUSD) < 0.02 ): # grazie Giunta
-		text = "<b>Price change detected.</b>\n\nPrice is now {}$ = <b>{}€</b>\nPrice was {}$ = <b></b>\nMoney conversion: 1 USD = {} EUR\nCurrent Time Remaining is {}\nGo check {}".format( currentPriceUSD, currentPriceEUR, previousPriceUSD, previousPriceEUR, round(USDtoEURconversion, 3), humanTime, url ) 
+	if ( abs(currentPriceUSD - previousPriceUSD) > 0.02 ): # grazie Giunta
+		if currentPriceUSD > previousPriceUSD: #bad
+			emojiCode = emoji.emojize(':thumbs_down: (increased)')
+		else:
+			emojiCode = emoji.emojize(':thumbs_up: (decreased)')
+		print(emojiCode)
+		text = "<b>Price change detected.</b>\n{}\n\nPrice is now {}$ = <b>{}€</b>\nPrice was {}$ = <b>{}€</b>\nMoney conversion: 1 USD = {} EUR\n\nCurrent Time Remaining is {}\nGo check {}".format( emojiCode, currentPriceUSD, currentPriceEUR, previousPriceUSD, previousPriceEUR, round(USDtoEURconversion, 3), humanTime, url ) 
 		bot.send_message(disable_web_page_preview = True, chat_id=31923577,  text=text, parse_mode="Html")
 		insertNewPrice(currentPriceUSD, currentPriceEUR, USDtoEURconversion)
+	connection.commit()
+	connection.close()
 
+def init_DB():
+	timestamp = time.time()
+	result = urlparse(STRING_DB)
+	username = result.username
+	password = result.password
+	database = result.path[1:]
+	hostname = result.hostname
+	connection = psycopg2.connect(
+								database = database,
+								user = username,
+								password = password,
+								host = hostname
+								)
+	cur = connection.cursor()
+	cur.execute("""CREATE TABLE IF NOT EXISTS pricetable (id serial PRIMARY KEY, priceUSD varchar(10), priceEUR varchar(10), USDtoEURconversion varchar(10), timestamp varchar(20) ) """)
+	# ensure an initial price record is present
+	priceUSD, currency = getPriceandCurrency(url)
+	USDtoEURconversion = getPriceConversion(urlPriceConversion)
+	priceEUR = round( priceUSD * USDtoEURconversion, 2)  
+	print("initDB inizio")
+	print(priceUSD, currency, USDtoEURconversion, priceEUR)
+	print("fine")
+	cur.execute('INSERT INTO pricetable (priceUSD, priceEUR, USDtoEURconversion, timestamp ) VALUES (%s, %s, %s, %s)', (priceUSD, priceEUR, USDtoEURconversion, timestamp))
+	connection.commit()
+	connection.close()
+	
+init_DB()
 		
 start_handler = CommandHandler('start', start)
 start_handler = CommandHandler('prezzo', askPrice)
