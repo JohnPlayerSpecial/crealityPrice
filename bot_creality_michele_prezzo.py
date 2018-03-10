@@ -112,6 +112,8 @@ def callback_minute(bot, job):
 	ps = db.prepare("SELECT * FROM priceTable ORDER BY ID DESC LIMIT 1;")
 	previousPriceUSD = float( [ item[1] for item in ps() ][0] )
 	previousPriceEUR = float( [ item[2] for item in ps() ][0] )
+	print(previousPriceUSD )
+	print(previousPriceEUR )
 	#if changed price send msg
 	if ( abs(currentPriceUSD - previousPriceUSD) < 0.02 ): # grazie Giunta
 		text = "<b>Price change detected.</b>\n\nPrice is now {}$ = <b>{}€</b>\nPrice was {}$ = <b></b>\nMoney conversion: 1 USD = {} EUR\nCurrent Time Remaining is {}\nGo check {}".format( currentPriceUSD, currentPriceEUR, previousPriceUSD, previousPriceEUR, round(USDtoEURconversion, 3), humanTime, url ) 
