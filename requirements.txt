@@ -4,3 +4,4 @@ telegram==0.0.1
 postgres==2.2.1
 py-postgresql==1.2.1
 requests==2.18.4
+psycopg2==2.7.4
