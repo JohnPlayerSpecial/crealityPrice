@@ -28,12 +28,13 @@ def init_DB():
 	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, USDtoEURconversion, timestamp) VALUES ('{}')".format(priceUSD, priceEUR, USDtoEURconversion , timestamp) )
 	ps()       
 	db.close()
-
-def insertNewPrice():
+init_DB()
+	
+def insertNewPrice(priceUSD,priceEUR, USDtoEURconversion):
 	global STRING_DB
 	timestamp = time.time()
 	db = postgresql.open(STRING_DB)
-	ps = db.prepare("INSERT INTO priceTable (price, timestamp) VALUES ('{}')".format(price, timestamp) )
+	ps = db.prepare("INSERT INTO priceTable (priceUSD, priceEUR, pricetoEURconversion, timestamp) VALUES ('{}')".format(priceUSD, priceEUR, USDtoEURconversion,  timestamp) )
 	ps()
 	db.close()
 
@@ -118,7 +119,9 @@ def callback_minute(bot, job):
 	if ( abs(currentPriceUSD - previousPriceUSD) < 0.02 ): # grazie Giunta
 		text = "<b>Price change detected.</b>\n\nPrice is now {}$ = <b>{}€</b>\nPrice was {}$ = <b></b>\nMoney conversion: 1 USD = {} EUR\nCurrent Time Remaining is {}\nGo check {}".format( currentPriceUSD, currentPriceEUR, previousPriceUSD, previousPriceEUR, round(USDtoEURconversion, 3), humanTime, url ) 
 		bot.send_message(disable_web_page_preview = True, chat_id=31923577,  text=text, parse_mode="Html")
+		insertNewPrice(currentPriceUSD, currentPriceEUR, USDtoEURconversion)
 
+		
 start_handler = CommandHandler('start', start)
 start_handler = CommandHandler('prezzo', askPrice)
 dispatcher = updater.dispatcher
