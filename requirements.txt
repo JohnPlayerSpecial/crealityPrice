@@ -5,3 +5,4 @@ postgres==2.2.1
 py-postgresql==1.2.1
 requests==2.18.4
 psycopg2==2.7.4
+emoji==0.4.5
