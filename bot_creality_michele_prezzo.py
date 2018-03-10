@@ -7,11 +7,11 @@ from bs4 import BeautifulSoup
 #import postgresql
 import time
 
-#STRING_DB = os.environ['DATABASE_URL'].replace("postgres","pq")
+STRING_DB = os.environ['DATABASE_URL'].replace("postgres","pq")
 url = "https://www.gearbest.com/3d-printers-3d-printer-kits/pp_779174.html"
 urlPriceConversion = "https://order.gearbest.com/data-cache/currency_huilv.js?v=20180124153657"
 urlTimeRemaining = "https://www.gearbest.com/3d-printers-3d-printer-kits/pp_779174.html?wid=21&act=get_promo_left"
-TOKEN = '502188662:AAF6iicBAxVku07NYtPTvsmw3yZwIntDs6U'
+TOKEN = os.environ['TOKEN']
 updater = Updater(token=TOKEN)
 
 
