@@ -96,7 +96,7 @@ def start(bot, update):
 
 def askPrice(bot, update):
 	global url
-	bot.sendChatAction(chat_id=31923577,  action = "typing")
+	bot.sendChatAction(chat_id=update.message.chat_id,  action = "typing")
 	price, currency = getPriceandCurrency(url)
 	USDtoEURconversion = getPriceConversion(urlPriceConversion)
 	priceEUR = round( price * USDtoEURconversion, 2)
